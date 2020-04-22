@@ -8,11 +8,11 @@ class VGG(nn.Module):
         self.inchannel = 1
         self.extractor = self._make_layer(config)
         self.classifier = nn.Sequential(
-            nn.Linear(512, 1024),
+            nn.Linear(self.inchannel, 2 * self.inchannel),
             nn.ReLU(),
-            nn.Linear(1024, 1024),
+            nn.Linear(2 * self.inchannel, 2 * self.inchannel),
             nn.ReLU(),
-            nn.Linear(1024, 10)
+            nn.Linear(2 * self.inchannel, 10)
         )
 
     def _make_layer(self, config):
@@ -29,7 +29,7 @@ class VGG(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        out = self.extractor(x).view(-1, 1, 512)
+        out = self.extractor(x).view(-1, 1, self.inchannel)
         out = self.classifier(out)
 
         return out

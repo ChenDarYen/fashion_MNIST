@@ -4,7 +4,9 @@ import torch.nn as nn
 import torch.utils.data as Data
 import torchvision.transforms as transform
 import torchvision.datasets as dsets
-import pickle
+import os
+import copy
+import pandas as pd
 
 from vgg import VGG
 import utils
@@ -31,35 +33,59 @@ if __name__ == '__main__':
 
     # utils.show_data(testing_data, 3, 'images/test')
 
-    training_loader = Data.DataLoader(dataset=training_data, batch_size=BATCH_SIZE, shuffle=True)
-    testing_loader = Data.DataLoader(dataset=testing_data, batch_size=1000, shuffle=False)
+    training_loader = Data.DataLoader(dataset=training_data,
+                                      batch_size=BATCH_SIZE,
+                                      shuffle=True,
+                                      num_workers=2)
+    testing_loader = Data.DataLoader(dataset=testing_data,
+                                     batch_size=500,
+                                     shuffle=False,
+                                     num_workers=0)
 
     vgg16 = VGG(VGG16_CONFIG)
-    optimizer = torch.optim.Adam(params=vgg16.parameters(), lr=LR)
+
+    optimizers, optimizers_m, scripts, scripts_m = [], [], [], []
+
+    optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-3))
+    scripts.append('adam_1e-3')
+
+    optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-4))
+    scripts.append('adam_1e-4')
+
+    optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-5))
+    scripts.append('adam_1e-5')
+
+    optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-2))
+    scripts.append('sgd_1e-2')
+
+    optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3))
+    scripts.append('sgd_1e-3')
+
+    optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-4))
+    scripts.append('sgd_1e-4')
+
+    optimizers_m.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.9))
+    scripts_m.append('sgd_1e-3_9')
+
+    optimizers_m.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.7))
+    scripts_m.append('sgd_1e-3_7')
+
+    optimizers_m.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.5))
+    scripts_m.append('sgd_1e-3_5')
+
+    optimizers_m.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.3))
+    scripts_m.append('sgd_1e-3_3')
+
     loss_function = nn.CrossEntropyLoss()
 
-    record = []
-    cost_list, accuracy_list, time = utils.experiment(training_loader, testing_loader, vgg16, optimizer, loss_function)
-    print(cost_list)
-    print(accuracy_list)
-    print(time)
-    record.append({
-        'layer': 16,
-        'lr': LR,
-        'batch_size': BATCH_SIZE,
-        'optimizer': {
-            'name': 'adam',
-            'beta': [.9, .999],
-            'epsilon': 1e-8,
-            'weight_decay': 0,
-        },
-        'cost': cost_list,
-        'accuracy': accuracy_list,
-        'time': time,
-    })
+    if os.path.exists(RECORD_PATH):
+        records = pd.read_pickle(RECORD_PATH)
+    else:
+        records = pd.DataFrame()
 
-    file = open('record.pkl', 'wb')
-    pickle.dump(record, file)
-    file.close()
-
-    utils.visual_cost_accuracy(cost_list, accuracy_list, 'images/vgg16')
+    utils.experient(training_loader, testing_loader,
+                    vgg16, loss_function, optimizers,
+                    scripts, records, 'images/lr')
+    utils.experient(training_loader, testing_loader,
+                    vgg16, loss_function, optimizers_m,
+                    scripts_m, records, 'images/momentum')

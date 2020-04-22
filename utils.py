@@ -2,6 +2,8 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import time
+import copy
+
 from consts import *
 
 
@@ -41,11 +43,10 @@ def visual_cost_accuracy(cost_list, accuracy_list, save_path=None, show=True):
     if show:
         plt.show()
     else:
-        plt.cla()
+        plt.clf()
 
 
-def calc_time(start, end):
-    duration = end - start
+def calc_time(duration):
     sec = duration % 60
     min = duration // 60
     hour = duration // 3600
@@ -54,15 +55,16 @@ def calc_time(start, end):
 
 
 def experiment(training_loader, testing_loader, model, optimizer, loss_function):
+    torch.manual_seed(0)
     start = time.time()
 
     test_len = len(testing_loader.dataset)
     batch_size = training_loader.batch_size
-    cost_list, accuracy_list = [], []
+    loss_list, cost_list, accuracy_list = [], [], []
     for epoch in range(EPOCHS):
         print('{} epoch'.format(epoch))
         cost = 0
-        for X, Y in training_loader:
+        for step, (X, Y) in enumerate(training_loader):
             Z = torch.softmax(model(X), dim=2).view(batch_size, -1)
             loss = loss_function(Z, Y)
             optimizer.zero_grad()
@@ -70,7 +72,8 @@ def experiment(training_loader, testing_loader, model, optimizer, loss_function)
             optimizer.step()
 
             cost += loss.item()
-            print(loss.item())
+            if step % STEPS_RECORD == 0:
+                loss_list.append(loss.item())
         print('cost: {}'.format(cost))
 
         correct = 0
@@ -85,4 +88,36 @@ def experiment(training_loader, testing_loader, model, optimizer, loss_function)
 
     end = time.time()
 
-    return cost_list, accuracy_list, end - start
+    return loss_list, cost_list, accuracy_list, end - start
+
+
+def experient(training_loader, testing_loader, model, loss_function, optimizers, scripts, records, dir):
+    state_dict = copy.deepcopy(model.state_dict())
+
+    for n in range(len(optimizers)):
+        print('model {}'.format(scripts[n]))
+        loss_list, cost_list, accuracy_list, time = experiment(training_loader,
+                                                               testing_loader,
+                                                               model,
+                                                               optimizers[n],
+                                                               loss_function)
+
+        time = calc_time(time)
+
+        record = {
+            'model': 'vgg16_half',
+            'optimizer': scripts[n],
+            'batch_size': BATCH_SIZE,
+            'time': time,
+            'lost': np.array(loss_list),
+            'cost': np.array(cost_list),
+            'accuracy': np.array(accuracy_list),
+        }
+        records = records.append(record, ignore_index=True)
+        print(cost_list)
+        print(accuracy_list)
+        print(time)
+        visual_cost_accuracy(cost_list, accuracy_list, '{}/vgg16_half_{}.png'.format(dir, scripts[n]), False)
+
+        model.load_state_dict(copy.deepcopy(state_dict))  # reset model
+        records.to_pickle(RECORD_PATH)
