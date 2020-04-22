@@ -46,23 +46,23 @@ if __name__ == '__main__':
 
     optimizers, optimizers_m, scripts, scripts_m = [], [], [], []
 
-    optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-3))
-    scripts.append('adam_1e-3')
-
-    optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-4))
-    scripts.append('adam_1e-4')
-
-    optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-5))
-    scripts.append('adam_1e-5')
-
-    optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-2))
-    scripts.append('sgd_1e-2')
-
-    optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3))
-    scripts.append('sgd_1e-3')
-
-    optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-4))
-    scripts.append('sgd_1e-4')
+    # optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-3))
+    # scripts.append('adam_1e-3')
+    #
+    # optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-4))
+    # scripts.append('adam_1e-4')
+    #
+    # optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-5))
+    # scripts.append('adam_1e-5')
+    #
+    # optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-2))
+    # scripts.append('sgd_1e-2')
+    #
+    # optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3))
+    # scripts.append('sgd_1e-3')
+    #
+    # optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-4))
+    # scripts.append('sgd_1e-4')
 
     optimizers_m.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.9))
     scripts_m.append('sgd_1e-3_9')

@@ -63,6 +63,7 @@ def experiment(training_loader, testing_loader, model, optimizer, loss_function)
     loss_list, cost_list, accuracy_list = [], [], []
     for epoch in range(EPOCHS):
         print('{} epoch'.format(epoch))
+        e_start = time.time()
         cost = 0
         for step, (X, Y) in enumerate(training_loader):
             Z = torch.softmax(model(X), dim=2).view(batch_size, -1)
@@ -85,6 +86,7 @@ def experiment(training_loader, testing_loader, model, optimizer, loss_function)
 
         cost_list.append(cost)
         accuracy_list.append(correct / test_len)
+        print('cost {}'.format(calc_time(time.time() - e_start)))
 
     end = time.time()
 
