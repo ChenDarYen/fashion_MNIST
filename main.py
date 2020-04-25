@@ -14,8 +14,6 @@ from consts import *
 
 
 if __name__ == '__main__':
-    torch.manual_seed(0)
-
     compose = transform.Compose([transform.Resize((IMAGE_SIZE, IMAGE_SIZE)), transform.ToTensor()])
 
     training_data = dsets.FashionMNIST(
@@ -42,39 +40,19 @@ if __name__ == '__main__':
                                      shuffle=False,
                                      num_workers=0)
 
-    vgg16 = VGG(VGG16_CONFIG)
-
     optimizers, optimizers_m, scripts, scripts_m = [], [], [], []
 
-    # optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-3))
-    # scripts.append('adam_1e-3')
-    #
-    # optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-4))
-    # scripts.append('adam_1e-4')
-    #
-    # optimizers.append(torch.optim.Adam(params=vgg16.parameters(), lr=1e-5))
-    # scripts.append('adam_1e-5')
-    #
-    # optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-2))
-    # scripts.append('sgd_1e-2')
-    #
-    # optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3))
-    # scripts.append('sgd_1e-3')
-    #
-    # optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-4))
-    # scripts.append('sgd_1e-4')
+    torch.manual_seed(0)
+    vgg16 = VGG(VGG16_CONFIG)
 
-    optimizers_m.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.9))
-    scripts_m.append('sgd_1e-3_9')
+    optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.9))
+    scripts.append('sgd-1e-3_9')
 
-    optimizers_m.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.7))
-    scripts_m.append('sgd_1e-3_7')
+    optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.8))
+    scripts.append('sgd-1e-3_8')
 
-    optimizers_m.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.5))
-    scripts_m.append('sgd_1e-3_5')
-
-    optimizers_m.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.3))
-    scripts_m.append('sgd_1e-3_3')
+    optimizers.append(torch.optim.SGD(params=vgg16.parameters(), lr=1e-3, momentum=.7))
+    scripts.append('sgd-1e-3_7')
 
     loss_function = nn.CrossEntropyLoss()
 
@@ -85,7 +63,7 @@ if __name__ == '__main__':
 
     utils.experient(training_loader, testing_loader,
                     vgg16, loss_function, optimizers,
-                    scripts, records, 'images/lr')
-    utils.experient(training_loader, testing_loader,
-                    vgg16, loss_function, optimizers_m,
-                    scripts_m, records, 'images/momentum')
+                    scripts, records, 'images/vgg16/momentum')
+    # utils.experient(training_loader, testing_loader,
+    #                 vgg16_h, loss_function, optimizers_m,
+    #                 scripts_m, records, 'images/vgg16_half/momentum')
